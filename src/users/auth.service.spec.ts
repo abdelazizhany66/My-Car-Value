@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing";
 import { AuthService } from "./auth.service";
 import { UsersService } from "./users.service";
 import { User } from "./user.entity";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe('Auth Service',()=>{
   let service : AuthService
@@ -53,9 +53,9 @@ describe('Auth Service',()=>{
   })
 
   it('throws an error if user signs up with email that is in use', async () => {
-    fakeUsersService.find = () => 
-      Promise.resolve([{ id: 1, email: 'a', password: '1' } as User]);
-    
+    // fakeUsersService.find = () => 
+    //   Promise.resolve([{ id: 1, email: 'a', password: '1' } as User]);
+      await service.signup('asdf@asdf.com', '1')
     // throw error becuase find element in array  { id: 1, email: 'a', password: '1' }
     await expect(service.signup('asdf@asdf.com', 'asdf')).rejects.toThrow(
       BadRequestException,
@@ -67,11 +67,12 @@ describe('Auth Service',()=>{
   })
 
   it('throws if an invalid password is provided', async ()=>{
-    fakeUsersService.find = () => 
-      Promise.resolve([{id:1, email:'aaa@aa.com', password:'jdddd'} as User])
+    // fakeUsersService.find = () => 
+    //   Promise.resolve([{ email:'aaa@aa.com', password:'jdddd'} as User])
+      await service.signup('aaa@aa.com', 'jdddd')
       await expect(service.signin('AA@aa.com', 'www')).rejects.toThrow(BadRequestException)
   })
-  it('password is provided',async ()=>{
+  it('password is correct',async ()=>{
    await service.signup('aaa@aaa.com','mypassword')
    const user = await service.signin('aaa@aaa.com','mypassword')
    expect(user).toBeDefined()

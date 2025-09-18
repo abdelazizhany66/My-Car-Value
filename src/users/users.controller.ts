@@ -2,9 +2,9 @@ import { Controller, Post, Get, Delete, Patch, NotFoundException, Query, Param, 
 import { CreateUserDto } from '../dtos/create.user.dto'
 import { UpdateUserDto } from '../dtos/update.user.dto';
 import { UsersService } from './users.service';
+import { serialize } from '../interseptors/serialize.interceptor';
+import { UserDto } from '../dtos/user.dto';
 import { AuthService } from './auth.service';
-import { serialize } from 'src/interseptors/serialize.interceptor';
-import { UserDto } from 'src/dtos/user.dto';
 import { CurrentUser } from './decoration/current-user.decorator';
 import { User } from './user.entity';
 import { AuthGuard } from '../guards/auth.guard';
@@ -33,7 +33,7 @@ export class UsersController {
   }
 
   @Post('/signup')
-   async createUser(@Body() body: CreateUserDto, @Session() session:any ){
+   async signUp(@Body() body: CreateUserDto, @Session() session:any ){
     const user = await this.AuthService.signup(body.email, body.password)
     session.userId = user.id
     return user;
@@ -46,10 +46,8 @@ export class UsersController {
     return user;
   }
 
-  @serialize(UserDto)
   @Get('/:id')
   async findUser(@Param('id') id:string){
-    console.log( ' interceptor is runnig')
     const user = await this.usersService.findOne(parseInt(id))
     if(!user){
       throw new NotFoundException(' not found user')
