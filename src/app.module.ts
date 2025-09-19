@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import cookieSession from 'cookie-session';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -12,14 +13,14 @@ import { Report } from './reports/report.entity'
   imports: [
     ConfigModule.forRoot({
       isGlobal:true,
-      envFilePath:`env.${process.env.ENV_NODE}`
+      envFilePath:`.env.${process.env.NODE_ENV}`
     }),
     TypeOrmModule.forRootAsync({
       inject:[ConfigService],
       useFactory: (config: ConfigService)=>{
         return {
           type:'sqlite',
-          database:config.get<string>('DB-NAME'),
+          database:config.get<string>('DB_NAME'),
           entities:[User, Report],
           synchronize:true
         }
@@ -30,4 +31,14 @@ import { Report } from './reports/report.entity'
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer){
+    consumer
+      .apply(
+        cookieSession({
+          keys:['sasasdd']
+        })
+      )
+      .forRoutes('*')
+  }
+}
